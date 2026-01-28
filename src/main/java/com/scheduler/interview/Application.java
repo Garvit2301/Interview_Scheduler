@@ -30,34 +30,34 @@ public class Application {
     /**
      * Configure CORS to allow frontend access
      */
-    // @Bean
-    // public WebMvcConfigurer corsConfigurer() {
-    //     return new WebMvcConfigurer() {
-    //         @Override
-    //         public void addCorsMappings(CorsRegistry registry) {
-    //             registry.addMapping("/api/**")
-    //                     .allowedOrigins(
-    //                             "https://interviewscheduler-production.up.railway.app/"
-    //                     )
-    //                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-    //                     .allowedHeaders("*")
-    //                     .allowCredentials(false)
-    //                     .maxAge(3600);
-    //         }
-    //     };
-    // }
-
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("*")
+                        .allowedOrigins(
+                                "https://interviewscheduler-production.up.railway.app/"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
+                        .allowCredentials(false)
                         .maxAge(3600);
             }
         };
     }
+
+    // @Bean
+    // public WebMvcConfigurer corsConfigurer() {
+    //     return new WebMvcConfigurer() {
+    //         @Override
+    //         public void addCorsMappings(CorsRegistry registry) {
+    //             registry.addMapping("/api/**")
+    //                     .allowedOrigins("*")
+    //                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+    //                     .allowedHeaders("*")
+    //                     .maxAge(3600);
+    //         }
+    //     };
+    // }
 }
