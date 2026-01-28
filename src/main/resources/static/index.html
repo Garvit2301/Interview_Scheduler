@@ -286,6 +286,23 @@
         
         .stat-card h2 { font-size: 2.5em; margin-bottom: 10px; }
         .stat-card p { font-size: 14px; }
+
+        @media (max-width: 553px) {
+            .btn-wrap {
+                text-align: center;
+            }
+            .alignbtn {
+                margin: 5px;
+                /* width: fit-content;
+                width: 250px; */
+            }
+        }
+
+        @media (max-width: 410px) {
+            input, select, textarea {
+                width: 75%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -323,8 +340,10 @@
                         <input type="number" id="max-interviews" value="10" min="1" max="50">
                     </div>
                 </div>
-                <button onclick="createInterviewer()">Create Interviewer</button>
-                <button class="danger" onclick="resetDatabase()">Reset Database</button>
+                <div class="btn-wrap text-center">
+                    <button class="alignbtn" onclick="createInterviewer()">Create Interviewer</button>
+                    <button class="alignbtn" class="danger" onclick="resetDatabase()">Reset Database</button>
+                </div>
             </div>
 
             <hr>
