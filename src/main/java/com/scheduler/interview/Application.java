@@ -20,9 +20,9 @@ public class Application {
                 "║                                                            ║\n" +
                 "║     Interview Scheduler Application Started Successfully  ║\n" +
                 "║                                                            ║\n" +
-                "║  🌐 Application: http://localhost:8080                    ║\n" +
-                "║  📚 Swagger UI: http://localhost:8080/swagger-ui.html     ║\n" +
-                "║  📊 API Docs: http://localhost:8080/api-docs              ║\n" +
+                "║  🌐 Application: https://interviewscheduler-production.up.railway.app/                    ║\n" +
+                "║  📚 Swagger UI: https://interviewscheduler-production.up.railway.app/swagger-ui.html     ║\n" +
+                "║  📊 API Docs: https://interviewscheduler-production.up.railway.app/api-docs              ║\n" +
                 "║                                                            ║\n" +
                 "╚════════════════════════════════════════════════════════════╝\n");
     }

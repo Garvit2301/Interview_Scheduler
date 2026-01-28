@@ -96,8 +96,8 @@ mvn spring-boot:run
 Expected Output:
 ╔════════════════════════════════════════════════════════════╗
 ║     Interview Scheduler Application Started Successfully  ║
-║  🌐 Application: http://localhost:8080                    ║
-║  📚 Swagger UI: http://localhost:8080/swagger-ui.html     ║
+║  🌐 Application: https://interviewscheduler-production.up.railway.app/                    ║
+║  📚 Swagger UI: https://interviewscheduler-production.up.railway.app/swagger-ui.html     ║
 ╚════════════════════════════════════════════════════════════╝
 Step 4: Open Frontend
 bashcd ../frontend
@@ -209,13 +209,13 @@ Frontend cannot reach backend
 
 Ensure backend is running on port 8080
 Check browser console for CORS errors
-Verify API_URL in frontend: http://localhost:8080/api
+Verify API_URL in frontend: https://interviewscheduler-production.up.railway.app/api
 
 
 📈 Next Steps
 
 ✅ Test all features using the frontend
-📚 Explore Swagger UI: http://localhost:8080/swagger-ui.html
+📚 Explore Swagger UI: https://interviewscheduler-production.up.railway.app/swagger-ui.html
 🧪 Test race conditions with multiple browser tabs
 📊 View database to see how data is stored
 
