@@ -36,47 +36,37 @@ public class AdminService {
      */
     @Transactional
     public ResetResult resetDatabase() {
-        try {
-            // Step 1: Delete in correct order (child tables first)
-            long bookingsDeleted = bookingRepository.count();
-            bookingRepository.deleteAll();
-            
-            long timeSlotsDeleted = timeSlotRepository.count();
-            timeSlotRepository.deleteAll();
-            
-            long candidatesDeleted = candidateRepository.count();
-            candidateRepository.deleteAll();
-            
-            long interviewersDeleted = interviewerRepository.count();
-            interviewerRepository.deleteAll();
-            
-            // Step 2: Reset auto-increment counters (MySQL specific)
-            resetAutoIncrement("bookings");
-            resetAutoIncrement("time_slots");
-            resetAutoIncrement("candidates");
-            resetAutoIncrement("interviewers");
-            
-            // Step 3: Flush changes
-            entityManager.flush();
-            entityManager.clear();
-            
-            return new ResetResult(
-                true,
-                "Database reset successful",
-                bookingsDeleted,
-                timeSlotsDeleted,
-                candidatesDeleted,
-                interviewersDeleted
-            );
-            
-        } catch (Exception e) {
-            return new ResetResult(
-                false,
-                "Database reset failed: " + e.getMessage(),
-                0, 0, 0, 0
-            );
-        }
+
+        long bookingsDeleted = bookingRepository.count();
+        bookingRepository.deleteAll();
+
+        long timeSlotsDeleted = timeSlotRepository.count();
+        timeSlotRepository.deleteAll();
+
+        long candidatesDeleted = candidateRepository.count();
+        candidateRepository.deleteAll();
+
+        long interviewersDeleted = interviewerRepository.count();
+        interviewerRepository.deleteAll();
+
+        resetAutoIncrement("bookings");
+        resetAutoIncrement("time_slots");
+        resetAutoIncrement("candidates");
+        resetAutoIncrement("interviewers");
+
+        entityManager.flush();
+        entityManager.clear();
+
+        return new ResetResult(
+            true,
+            "Database reset successful",
+            bookingsDeleted,
+            timeSlotsDeleted,
+            candidatesDeleted,
+            interviewersDeleted
+        );
     }
+
     
     /**
      * Reset auto-increment counter for a table
