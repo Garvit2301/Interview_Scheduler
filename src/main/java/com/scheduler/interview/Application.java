@@ -37,7 +37,7 @@ public class Application {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
                         .allowedOrigins(
-                                "https://interviewscheduler-production.up.railway.app"
+                                "https://interviewscheduler-production.up.railway.app/"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
