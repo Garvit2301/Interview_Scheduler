@@ -128,24 +128,52 @@
     </div>
 
     <!-- REGISTER -->
-    <div class="section">
+    <div class="section" id="candidate-register-section">
         <h3>Register as Candidate</h3>
         <div class="form-row">
             <div>
                 <label>Name *</label>
-                <input type="text" id="candidate-name">
+                <input type="text" id="candidate-name" placeholder="John Doe">
             </div>
             <div>
                 <label>Email *</label>
-                <input type="email" id="candidate-email">
+                <input type="email" id="candidate-email" placeholder="john@company.com">
             </div>
             <div>
-                <label>Phone</label>
-                <input type="tel" id="candidate-phone">
+                <label>Phone *</label>
+                <input type="tel" id="candidate-phone" placeholder="Mobile No.">
             </div>
+            <!-- <div>
+                <label>Password *</label>
+                <input type="password" id="candidate-password" placeholder="8 characters minimum">
+            </div> -->
         </div>
         <button onclick="registerCandidate()">Register</button>
+        <!-- <button type="button" class="switch-text" onclick="showLoginSection()">Already a registered user? Sign in...</button> -->
     </div>
+
+    <!-- <div class="section" id="candidate-login-section" style="display: none;">
+        <h3>Candidate Sign In</h3>
+
+        <div class="form-row">
+            <div>
+                <label>Email or Phone *</label>
+                <input type="text" id="login-identifier" placeholder="Email or Mobile Number">
+            </div>
+
+            <div>
+                <label>Password *</label>
+                <input type="password" id="login-password" placeholder="Your password">
+            </div>
+        </div>
+
+        <button onclick="loginCandidate()">Sign In</button>
+
+        <button type="button" class="switch-text" onclick="showRegisterSection()">
+            New user? Register here...
+        </button>
+    </div> -->
+
 
     <!-- SLOTS -->
     <div class="section">
@@ -165,7 +193,7 @@
 </div>
 
 <script>
-    const API_URL = 'https://interviewscheduler-production.up.railway.app/api';
+    const API_URL = 'http://https://interviewscheduler-production.up.railway.app/api';
     let selectedSlot = null;
     let currentCandidateId = null;
 
@@ -180,24 +208,152 @@
         document.getElementById('loading').classList.toggle('show', show);
     }
 
-    async function registerCandidate() {
+    function showLoginSection() {
+        document.getElementById('candidate-register-section').style.display = 'none';
+        document.getElementById('candidate-login-section').style.display = 'block';
+    }
+
+    function showRegisterSection() {
+        document.getElementById('candidate-login-section').style.display = 'none';
+        document.getElementById('candidate-register-section').style.display = 'block';
+    }
+
+    async function loginCandidate() {
+        const identifier = document.getElementById('login-identifier').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+
+        // ---------- VALIDATION ----------
+        if (!identifier) {
+            showMessage('❌ Email or Mobile number is required', 'error');
+            return;
+        }
+
+        if (!password) {
+            showMessage('❌ Password is required', 'error');
+            return;
+        }
+
+        if (password.length < 8) {
+            showMessage('❌ Password must be at least 8 characters long', 'error');
+            return;
+        }
+        // ---------- END VALIDATION ----------
+
         const data = {
-            name: document.getElementById('candidate-name').value,
-            email: document.getElementById('candidate-email').value,
-            phone: document.getElementById('candidate-phone').value
+            identifier, // can be email or phone
+            password
         };
 
         try {
             showLoading(true);
-            const res = await fetch(`${API_URL}/bookings/candidates`, {
+
+            const res = await fetch(`${API_URL}/bookings/loginCandidates`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || 'Invalid credentials');
+            }
+
+            const response = await res.json();
+
+            // Example: store token / candidate data
+            currentCandidateId = response.candidateId;
+            localStorage.setItem('candidateToken', response.token);
+
+            showMessage('✅ Login successful!', 'success');
+
+            // 👉 optional: move to booking section
+            // showBookingSection();
+
+        } catch (error) {
+            showMessage('❌ Login failed: ' + error.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+
+    async function registerCandidate() {
+        const name = document.getElementById('candidate-name').value.trim();
+        const email = document.getElementById('candidate-email').value.trim();
+        const phone = document.getElementById('candidate-phone').value.trim();
+        const password = document.getElementById('candidate-password').value.trim();
+
+        // ---------- VALIDATION ----------
+        
+        if (!name) {
+            showMessage('❌ Name is required', 'error');
+            return;
+        }
+
+        if (name.length < 2) {
+            showMessage('❌ Name must be at least 2 characters long', 'error');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            showMessage('❌ Email is required', 'error');
+            return;
+        }
+
+        if (!emailRegex.test(email)) {
+            showMessage('❌ Please enter a valid email address', 'error');
+            return;
+        }
+
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phone) {
+            showMessage('❌ Mobile number is required', 'error');
+            return;
+        }
+
+        if (!phoneRegex.test(phone)) {
+            showMessage('❌ Mobile number must be exactly 10 digits', 'error');
+            return;
+        }
+
+        // 🔐 PASSWORD VALIDATION
+        if (!password) {
+            showMessage('❌ Password is required', 'error');
+            return;
+        }
+
+        if (password.length < 8) {
+            showMessage('❌ Password must be at least 8 characters long', 'error');
+            return;
+        }
+        // ---------- END VALIDATION ----------
+
+        const data = {
+            name,
+            email,
+            phone
+        };
+
+        try {
+            showLoading(true);
+
+            const res = await fetch(`${API_URL}/bookings/candidates`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || 'Server error');
+            }
+
             const candidate = await res.json();
             currentCandidateId = candidate.id;
+
             showMessage('✅ Registered successfully! You can now book slots.', 'success');
+
         } catch (error) {
             showMessage('❌ Error registering: ' + error.message, 'error');
         } finally {

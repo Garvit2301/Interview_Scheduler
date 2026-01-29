@@ -134,14 +134,20 @@
             <div>
                 <label>Name *</label>
                 <input type="text" id="candidate-name">
+                <!-- <input type="text" id="candidate-name" required> -->
             </div>
             <div>
                 <label>Email *</label>
                 <input type="email" id="candidate-email">
+                <!-- <input type="email" id="candidate-email" required> -->
             </div>
             <div>
                 <label>Phone</label>
                 <input type="tel" id="candidate-phone">
+
+                <!-- <label for="mobileNumber">Mobile Number:</label>
+                <input type="tel" id="mobileNumber" name="mobileNumber" minlength="10" maxlength="10" pattern="[0-9]{10}"
+                    title="Please enter a valid 10-digit mobile number" required> -->
             </div>
         </div>
         <button onclick="registerCandidate()">Register</button>
@@ -180,30 +186,105 @@
         document.getElementById('loading').classList.toggle('show', show);
     }
 
+    // async function registerCandidate() {
+    //     const data = {
+    //         name: document.getElementById('candidate-name').value,
+    //         email: document.getElementById('candidate-email').value,
+    //         phone: document.getElementById('candidate-phone').value
+    //     };
+
+    //     try {
+    //         showLoading(true);
+    //         const res = await fetch(`${API_URL}/bookings/candidates`, {
+    //             method: 'POST',
+    //             headers: {'Content-Type': 'application/json'},
+    //             body: JSON.stringify(data)
+    //         });
+            
+    //         const candidate = await res.json();
+    //         currentCandidateId = candidate.id;
+    //         showMessage('✅ Registered successfully! You can now book slots.', 'success');
+    //     } catch (error) {
+    //         showMessage('❌ Error registering: ' + error.message, 'error');
+    //     } finally {
+    //         showLoading(false);
+    //     }
+    // }
+
     async function registerCandidate() {
+        const name = document.getElementById('candidate-name').value.trim();
+        const email = document.getElementById('candidate-email').value.trim();
+        const phone = document.getElementById('candidate-phone').value.trim();
+
+        // ---------- VALIDATION ----------
+        console.log("function chal raha hai");
+        
+        if (!name) {
+            showMessage('❌ Name is required', 'error');
+            return;
+        }
+
+        if (name.length < 2) {
+            showMessage('❌ Name must be at least 2 characters long', 'error');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            showMessage('❌ Email is required', 'error');
+            return;
+        }
+
+        if (!emailRegex.test(email)) {
+            showMessage('❌ Please enter a valid email address', 'error');
+            return;
+        }
+
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phone) {
+            showMessage('❌ Mobile number is required', 'error');
+            return;
+        }
+
+        if (!phoneRegex.test(phone)) {
+            showMessage('❌ Mobile number must be exactly 10 digits', 'error');
+            return;
+        }
+        // ---------- END VALIDATION ----------
+
         const data = {
-            name: document.getElementById('candidate-name').value,
-            email: document.getElementById('candidate-email').value,
-            phone: document.getElementById('candidate-phone').value
+            name,
+            email,
+            phone
         };
 
         try {
             showLoading(true);
+
             const res = await fetch(`${API_URL}/bookings/candidates`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || 'Server error');
+            }
+
             const candidate = await res.json();
             currentCandidateId = candidate.id;
+
             showMessage('✅ Registered successfully! You can now book slots.', 'success');
+
         } catch (error) {
             showMessage('❌ Error registering: ' + error.message, 'error');
         } finally {
             showLoading(false);
         }
     }
+
+
 
     async function loadAvailableSlots() {
         try {

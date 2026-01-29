@@ -30,10 +30,21 @@ public class BookingController {
         Candidate candidate = new Candidate(
             request.get("name"),
             request.get("email"),
-            request.get("phone")
+            request.get("phone"),
+            request.get("password")
         );
         
         return ResponseEntity.ok(candidateRepository.save(candidate));
+    }
+
+    @PostMapping("/loginCandidates")
+    public ResponseEntity<LoginStatus> loginCandidate(
+            @RequestBody Map<String, String> request) {
+     
+        LoginStatus loginstatus = new LoginStatus(
+            request.get("email"),
+            request.get("password")
+        );
     }
     
     @PostMapping
@@ -61,6 +72,8 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
         }
     }
+
+    
     
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> rescheduleBooking(

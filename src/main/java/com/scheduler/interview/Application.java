@@ -53,9 +53,14 @@ public class Application {
     //         @Override
     //         public void addCorsMappings(CorsRegistry registry) {
     //             registry.addMapping("/api/**")
-    //                     .allowedOrigins("*")
+    //                     .allowedOrigins(
+    //                             "http://localhost:3000",
+    //                             "http://localhost:5173",
+    //                             "http://localhost:8080"
+    //                     )
     //                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
     //                     .allowedHeaders("*")
+    //                     .allowCredentials(false)
     //                     .maxAge(3600);
     //         }
     //     };
