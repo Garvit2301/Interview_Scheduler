@@ -36,16 +36,6 @@ public class BookingController {
         
         return ResponseEntity.ok(candidateRepository.save(candidate));
     }
-
-    @PostMapping("/loginCandidates")
-    public ResponseEntity<LoginStatus> loginCandidate(
-            @RequestBody Map<String, String> request) {
-     
-        LoginStatus loginstatus = new LoginStatus(
-            request.get("email"),
-            request.get("password")
-        );
-    }
     
     @PostMapping
     public ResponseEntity<Map<String, Object>> bookSlot(
