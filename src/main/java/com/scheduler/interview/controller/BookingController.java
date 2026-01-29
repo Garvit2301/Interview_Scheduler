@@ -30,8 +30,8 @@ public class BookingController {
         Candidate candidate = new Candidate(
             request.get("name"),
             request.get("email"),
-            request.get("phone"),
-            request.get("password")
+            request.get("phone")
+            // request.get("password")
         );
         
         return ResponseEntity.ok(candidateRepository.save(candidate));
