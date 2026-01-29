@@ -281,7 +281,6 @@
         const name = document.getElementById('candidate-name').value.trim();
         const email = document.getElementById('candidate-email').value.trim();
         const phone = document.getElementById('candidate-phone').value.trim();
-        const password = document.getElementById('candidate-password').value.trim();
 
         // ---------- VALIDATION ----------
         
@@ -314,17 +313,6 @@
 
         if (!phoneRegex.test(phone)) {
             showMessage('❌ Mobile number must be exactly 10 digits', 'error');
-            return;
-        }
-
-        // 🔐 PASSWORD VALIDATION
-        if (!password) {
-            showMessage('❌ Password is required', 'error');
-            return;
-        }
-
-        if (password.length < 8) {
-            showMessage('❌ Password must be at least 8 characters long', 'error');
             return;
         }
         // ---------- END VALIDATION ----------
