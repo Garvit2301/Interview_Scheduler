@@ -286,23 +286,6 @@
         
         .stat-card h2 { font-size: 2.5em; margin-bottom: 10px; }
         .stat-card p { font-size: 14px; }
-
-        @media (max-width: 553px) {
-            .btn-wrap {
-                text-align: center;
-            }
-            .alignbtn {
-                margin: 5px;
-                /* width: fit-content;
-                width: 250px; */
-            }
-        }
-
-        @media (max-width: 410px) {
-            input, select, textarea {
-                width: 75%;
-            }
-        }
     </style>
 </head>
 <body>
@@ -337,13 +320,11 @@
                     </div>
                     <div class="form-group">
                         <label>Max Weekly Interviews *</label>
-                        <input type="number" id="max-interviews" value="10" min="1" max="50">
+                        <input type="number" id="max-interviews" value="5" min="1" max="50">
                     </div>
                 </div>
-                <div class="btn-wrap text-center">
-                    <button class="alignbtn" onclick="createInterviewer()">Create Interviewer</button>
-                    <button class="alignbtn" class="danger" onclick="resetDatabase()">Reset Database</button>
-                </div>
+                <button onclick="createInterviewer()">Create Interviewer</button>
+                <button class="danger" onclick="resetDatabase()">Reset Database</button>
             </div>
 
             <hr>
@@ -460,7 +441,6 @@
     </div>
 
     <script>
-
         const API_URL = 'https://interviewscheduler-production.up.railway.app/api';
         let selectedSlot = null;
         let currentCandidateId = null;
@@ -485,33 +465,115 @@
         }
 
         // Interviewer Functions
+
+        // async function createInterviewer() {
+        //     const data = {
+        //         name: document.getElementById('interviewer-name').value,
+        //         email: document.getElementById('interviewer-email').value,
+        //         maxWeeklyInterviews: parseInt(document.getElementById('max-interviews').value)
+        //     };
+
+        //     try {
+        //         showLoading(true);
+        //         const res = await fetch(`${API_URL}/interviewers`, {
+        //             method: 'POST',
+        //             headers: {'Content-Type': 'application/json'},
+        //             body: JSON.stringify(data)
+        //         });
+                
+        //         if (res.ok) {
+        //             showMessage('✅ Interviewer created successfully!', 'success');
+        //             loadInterviewers();
+        //             document.getElementById('interviewer-name').value = '';
+        //             document.getElementById('interviewer-email').value = '';
+        //         }
+        //     } catch (error) {
+        //         showMessage('❌ Error: ' + error.message, 'error');
+        //     } finally {
+        //         showLoading(false);
+        //     }
+        // }
+
+
         async function createInterviewer() {
+            const name = document.getElementById('interviewer-name').value.trim();
+            const email = document.getElementById('interviewer-email').value.trim();
+            const maxWeeklyInterviewsInput = document.getElementById('max-interviews').value.trim();
+
+            // ---------- VALIDATION ----------
+            if (!name) {
+                showMessage('❌ Name is required', 'error');
+                return;
+            }
+
+            if (name.length < 2) {
+                showMessage('❌ Name must be at least 2 characters long', 'error');
+                return;
+            }
+
+            if (!email) {
+                showMessage('❌ Email is required', 'error');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showMessage('❌ Please enter a valid email address', 'error');
+                return;
+            }
+
+            if (!maxWeeklyInterviewsInput) {
+                showMessage('❌ Max weekly interviews is required', 'error');
+                return;
+            }
+
+            const maxWeeklyInterviews = Number(maxWeeklyInterviewsInput);
+
+            if (isNaN(maxWeeklyInterviews)) {
+                showMessage('❌ Max weekly interviews must be a number', 'error');
+                return;
+            }
+
+            if (maxWeeklyInterviews < 1 || maxWeeklyInterviews > 15) {
+                showMessage('❌ Max weekly interviews must be between 1 and 15', 'error');
+                return;
+            }
+            // ---------- END VALIDATION ----------
+
             const data = {
-                name: document.getElementById('interviewer-name').value,
-                email: document.getElementById('interviewer-email').value,
-                maxWeeklyInterviews: parseInt(document.getElementById('max-interviews').value)
+                name,
+                email,
+                maxWeeklyInterviews
             };
 
             try {
                 showLoading(true);
+
                 const res = await fetch(`${API_URL}/interviewers`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                
-                if (res.ok) {
-                    showMessage('✅ Interviewer created successfully!', 'success');
-                    loadInterviewers();
-                    document.getElementById('interviewer-name').value = '';
-                    document.getElementById('interviewer-email').value = '';
+
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error(errText || 'Server error');
                 }
+
+                showMessage('✅ Interviewer created successfully!', 'success');
+                loadInterviewers();
+
+                document.getElementById('interviewer-name').value = '';
+                document.getElementById('interviewer-email').value = '';
+                document.getElementById('max-interviews').value = '';
+
             } catch (error) {
                 showMessage('❌ Error: ' + error.message, 'error');
             } finally {
                 showLoading(false);
             }
         }
+
 
         async function loadInterviewers() {
             try {
