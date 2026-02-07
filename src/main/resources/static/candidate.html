@@ -193,7 +193,7 @@
 </div>
 
 <script>
-    const API_URL = 'https://interviewscheduler-production.up.railway.app/api';
+    const API_URL = 'http://localhost:8080/api';
     let selectedSlot = null;
     let currentCandidateId = null;
 
@@ -276,7 +276,6 @@
         }
     }
 
-
     async function registerCandidate() {
         const name = document.getElementById('candidate-name').value.trim();
         const email = document.getElementById('candidate-email').value.trim();
@@ -317,11 +316,7 @@
         }
         // ---------- END VALIDATION ----------
 
-        const data = {
-            name,
-            email,
-            phone
-        };
+        const data = { name, email, phone };
 
         try {
             showLoading(true);
@@ -337,16 +332,54 @@
                 throw new Error(errText || 'Server error');
             }
 
-            const candidate = await res.json();
-            currentCandidateId = candidate.id;
+            const result = await res.json();
 
-            showMessage('✅ Registered successfully! You can now book slots.', 'success');
+            console.log(result);
+            // NEW candidate
+            if (result.id) {
+                currentCandidateId = result.id;
+                showMessage(
+                    '✅ Registered successfully! You can now book slots.',
+                    'success'
+                );
+            }
+
+            // Existing candidate
+            else if (result.candidate) {
+                currentCandidateId = result.candidate.id;
+                showMessage(result.message, 'info');
+
+                if (result.booking) {
+                    displayBooking(result.booking);
+                } else {
+                    showMessage(
+                        'ℹ️ You have no active booking. You can book a slot now.',
+                        'info'
+                    );
+                }
+            }
 
         } catch (error) {
             showMessage('❌ Error registering: ' + error.message, 'error');
         } finally {
             showLoading(false);
         }
+    }
+
+
+    function displayBooking(booking) {
+        const bookingDiv = document.getElementById('booking-details');
+
+        bookingDiv.innerHTML = `
+            <div class="booking-card">
+                <h3>📌 Your Current Booking</h3>
+                <p><strong>Status:</strong> ${booking.status}</p>
+                <p><strong>Booked At:</strong> ${new Date(booking.bookedAt).toLocaleString()}</p>
+                <p><strong>Notes:</strong> ${booking.notes || '—'}</p>
+            </div>
+        `;
+
+        bookingDiv.style.display = 'block';
     }
 
     async function loadAvailableSlots() {
