@@ -551,7 +551,6 @@
 
                 const res = await fetch(`${API_URL}/interviewers`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                 });
 
                 if (!res.ok) {
@@ -578,7 +577,6 @@
             try {
                 const res = await fetch(`${API_URL}/interviewers`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                 });
                 const interviewers = await res.json();
                 
