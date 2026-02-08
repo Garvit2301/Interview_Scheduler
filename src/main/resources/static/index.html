@@ -541,9 +541,9 @@
             // ---------- END VALIDATION ----------
 
             const data = {
-                name,
-                email,
-                maxWeeklyInterviews
+                name: name,
+                email: email,
+                maxWeeklyInterviews: maxWeeklyInterviews
             };
 
             try {
@@ -551,6 +551,8 @@
 
                 const res = await fetch(`${API_URL}/interviewers`, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 });
 
                 if (!res.ok) {
@@ -575,9 +577,7 @@
 
         async function loadInterviewers() {
             try {
-                const res = await fetch(`${API_URL}/interviewers`, {
-                    method: 'POST',
-                });
+                const res = await fetch(`${API_URL}/interviewers`);
                 const interviewers = await res.json();
                 
                 [document.getElementById('interviewer-select'),
