@@ -26,55 +26,7 @@ public class BookingController {
         this.candidateRepository = candidateRepository;
         this.bookingRepository = bookingRepository;
     }
-    
-    // @PostMapping("/candidates")
-    // public ResponseEntity<?> registerCandidate(
-    //         @RequestBody Map<String, String> request) {
 
-    //     String email = request.get("email");
-
-    //     Candidate candidate = new Candidate(
-    //         request.get("name"),
-    //         email,
-    //         request.get("phone")
-    //     );
-
-    //     try {
-    //         Candidate savedCandidate = candidateRepository.save(candidate);
-    //         return ResponseEntity.ok(savedCandidate);
-
-    //     } catch (DataIntegrityViolationException ex) {
-
-    //         // Candidate already exists → fetch from DB
-    //         Optional<Candidate> existingCandidateOpt =
-    //                 candidateRepository.findByEmail(email);
-
-    //         if (existingCandidateOpt.isEmpty()) {
-    //             // very rare edge case
-    //             return ResponseEntity
-    //                     .status(HttpStatus.CONFLICT)
-    //                     .body("Candidate already exists, but could not be fetched");
-    //         }
-
-    //         Candidate existingCandidate = existingCandidateOpt.get();
-    //         Booking booking = existingCandidate.getBooking();
-
-    //         Map<String, Object> response = new HashMap<>();
-    //         response.put("candidate", existingCandidate);
-
-    //         if (booking != null) {
-    //             response.put("booking", booking);
-    //             response.put("message", "Candidate already registered and has an active booking");
-    //         } else {
-    //             response.put("booking", null);
-    //             response.put("message", "Candidate already registered but has no booking");
-    //         }
-
-    //         return ResponseEntity
-    //                 .status(HttpStatus.OK)
-    //                 .body(response);
-    //     }
-    // }
     @PostMapping("/candidates")
     public ResponseEntity<?> registerCandidate(
             @RequestBody Map<String, String> request) {
@@ -157,7 +109,36 @@ public class BookingController {
         }
     }
 
-    
+    @PostMapping("/book-or-reschedule")
+    public ResponseEntity<?> bookOrReschedule(@RequestBody Map<String, Object> request) {
+
+        String email = (String) request.get("email");
+        Long slotId = ((Number) request.get("slotId")).longValue();
+        String notes = (String) request.get("notes");
+
+        Candidate candidate = candidateRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Candidate not found"));
+
+        Booking booking;
+
+        if (candidate.getBooking() != null) {
+            // 🔁 RESCHEDULE
+            booking = bookingService.updateBooking(
+                candidate.getBooking().getId(),
+                slotId
+            );
+        } else {
+            // 🆕 NEW BOOKING
+            booking = bookingService.bookSlot(
+                candidate.getId(),
+                slotId,
+                notes
+            );
+        }
+
+        return ResponseEntity.ok(booking);
+    }
+
     
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> rescheduleBooking(

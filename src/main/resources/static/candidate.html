@@ -111,6 +111,19 @@
             font-weight: 600;
         }
 
+        .booking-card {
+            background: #ffffff;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .booking-card h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+        }
+
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
         .show { display: block; }
@@ -152,6 +165,8 @@
         <!-- <button type="button" class="switch-text" onclick="showLoginSection()">Already a registered user? Sign in...</button> -->
     </div>
 
+    <div id="bookingDiv"></div>
+
     <!-- <div class="section" id="candidate-login-section" style="display: none;">
         <h3>Candidate Sign In</h3>
 
@@ -176,7 +191,7 @@
 
 
     <!-- SLOTS -->
-    <div class="section">
+    <div class="section" id="loadSlot" style="display:none;">
         <h3>Available Interview Slots</h3>
         <button onclick="loadAvailableSlots()">🔄 Refresh Slots</button>
         <div id="available-slots" class="slots-grid"></div>
@@ -187,15 +202,16 @@
         <h3>Confirm Booking</h3>
         <textarea id="booking-notes" rows="3" placeholder="Optional notes..."></textarea>
         <br><br>
-        <button onclick="confirmBooking()">✅ Confirm</button>
+        <button id="confirm-btn" onclick="confirmBooking()">✅ Confirm</button>
         <button onclick="cancelSelection()">❌ Cancel</button>
     </div>
 </div>
 
 <script>
-    const API_URL = 'https://interviewscheduler-production.up.railway.app/api';
+    const API_URL = 'http://interviewscheduler-production.up.railway.app/api';
     let selectedSlot = null;
     let currentCandidateId = null;
+    const bookingDiv = document.getElementById("bookingDiv");
 
     function showMessage(text, type) {
         const msg = document.getElementById('message');
@@ -276,6 +292,55 @@
         }
     }
 
+    // Booking new slot or updatinn the new slot
+    async function bookNewSlot() {
+        const email = document.getElementById("candidate-email").value.trim();
+
+        if (!email) {
+            showMessage("❌ Email is required", "error");
+            return;
+        }
+
+        if (!selectedSlot) {
+            showMessage("❌ Please select a slot", "error");
+            return;
+        }
+
+        const data = {
+            email: email,
+            slotId: selectedSlot.id,
+            notes: document.getElementById("booking-notes")?.value || ""
+        };
+
+        try {
+            showLoading(true);
+
+            const res = await fetch(`${API_URL}/bookings/book-or-reschedule`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text);
+            }
+
+            const booking = await res.json();
+
+            showMessage("✅ Booking updated successfully!", "success");
+
+            displayBooking(booking);
+            loadAvailableSlots(); // refresh slots
+            cancelSelection();
+
+        } catch (err) {
+            showMessage("❌ " + err.message, "error");
+        } finally {
+            showLoading(false);
+        }
+    }
+
     async function registerCandidate() {
         const name = document.getElementById('candidate-name').value.trim();
         const email = document.getElementById('candidate-email').value.trim();
@@ -342,6 +407,8 @@
                     '✅ Registered successfully! You can now book slots.',
                     'success'
                 );
+                document.getElementById("loadSlot").style.display = 'block';
+                document.getElementById("booking-form").style.display = 'block';
             }
 
             // Existing candidate
@@ -356,6 +423,8 @@
                         'ℹ️ You have no active booking. You can book a slot now.',
                         'info'
                     );
+                    document.getElementById("loadSlot").style.display = 'block';
+                    document.getElementById("booking-form").style.display = 'block';
                 }
             }
 
@@ -368,18 +437,21 @@
 
 
     function displayBooking(booking) {
-        const bookingDiv = document.getElementById('booking-details');
+        document.getElementById("confirm-btn").setAttribute("onclick", "bookNewSlot()")
 
         bookingDiv.innerHTML = `
             <div class="booking-card">
                 <h3>📌 Your Current Booking</h3>
                 <p><strong>Status:</strong> ${booking.status}</p>
-                <p><strong>Booked At:</strong> ${new Date(booking.bookedAt).toLocaleString()}</p>
-                <p><strong>Notes:</strong> ${booking.notes || '—'}</p>
+                <p><strong>Interviewer Name:</strong> ${booking.interviewer.name}</p>
+                <p><strong>Email:</strong> ${booking.interviewer.email || 'No notes'}</p>
+                <p><strong>Booking Date and Time:</strong> ${booking.timeSlot.slotDateTime}</p>
+                <p><strong>Duration:</strong> ${booking.timeSlot.durationMinutes}</p>
             </div>
         `;
 
-        bookingDiv.style.display = 'block';
+        document.getElementById("loadSlot").style.display = 'block';
+        document.getElementById("booking-form").style.display = 'block';
     }
 
     async function loadAvailableSlots() {

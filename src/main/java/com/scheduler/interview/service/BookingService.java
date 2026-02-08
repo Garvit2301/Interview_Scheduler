@@ -68,7 +68,6 @@ public class BookingService {
             booking.setInterviewer(slot.getInterviewer());
             booking.setStatus("CONFIRMED");
             booking.setNotes(notes);
-            
             return bookingRepository.save(booking);
             
         } catch (OptimisticLockException e) {
@@ -77,50 +76,95 @@ public class BookingService {
         }
     }
     
-    /**
-     * Update/Reschedule a booking
-     */
+    // /**
+    //  * Update/Reschedule a booking
+    //  */
+    // @Transactional(isolation = Isolation.READ_COMMITTED)
+    // public Booking updateBooking(Long bookingId, Long newSlotId) {
+        
+    //     Booking booking = bookingRepository.findById(bookingId)
+    //         .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+    //     if (!"CONFIRMED".equals(booking.getStatus())) {
+    //         throw new RuntimeException("Can only reschedule confirmed bookings");
+    //     }
+        
+    //     // Get old and new slots with lock
+    //     TimeSlot oldSlot = slotRepository.findByIdWithLock(booking.getTimeSlot().getId())
+    //         .orElseThrow(() -> new RuntimeException("Old slot not found"));
+        
+    //     TimeSlot newSlot = slotRepository.findByIdWithLock(newSlotId)
+    //         .orElseThrow(() -> new RuntimeException("New slot not found"));
+        
+    //     if (!"AVAILABLE".equals(newSlot.getStatus())) {
+    //         throw new RuntimeException("New slot is not available");
+    //     }
+        
+    //     try {
+    //         // Release old slot
+    //         oldSlot.setStatus("AVAILABLE");
+    //         slotRepository.save(oldSlot);
+            
+    //         // Book new slot
+    //         newSlot.setStatus("BOOKED");
+    //         slotRepository.save(newSlot);
+            
+    //         // Update booking
+    //         booking.setTimeSlot(newSlot);
+    //         booking.setInterviewer(newSlot.getInterviewer());
+            
+    //         return bookingRepository.save(booking);
+            
+    //     } catch (OptimisticLockException e) {
+    //         throw new RuntimeException(
+    //             "Rescheduling failed. Please try again.");
+    //     }
+    // }
+
+
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Booking updateBooking(Long bookingId, Long newSlotId) {
-        
+
         Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new RuntimeException("Booking not found"));
-        
+
         if (!"CONFIRMED".equals(booking.getStatus())) {
             throw new RuntimeException("Can only reschedule confirmed bookings");
         }
-        
-        // Get old and new slots with lock
-        TimeSlot oldSlot = slotRepository.findByIdWithLock(booking.getTimeSlot().getId())
+
+        // Lock old slot
+        TimeSlot oldSlot = slotRepository
+            .findByIdWithLock(booking.getTimeSlot().getId())
             .orElseThrow(() -> new RuntimeException("Old slot not found"));
-        
-        TimeSlot newSlot = slotRepository.findByIdWithLock(newSlotId)
+
+        // Lock new slot
+        TimeSlot newSlot = slotRepository
+            .findByIdWithLock(newSlotId)
             .orElseThrow(() -> new RuntimeException("New slot not found"));
-        
+
         if (!"AVAILABLE".equals(newSlot.getStatus())) {
             throw new RuntimeException("New slot is not available");
         }
-        
+
         try {
             // Release old slot
             oldSlot.setStatus("AVAILABLE");
-            slotRepository.save(oldSlot);
-            
+
             // Book new slot
             newSlot.setStatus("BOOKED");
-            slotRepository.save(newSlot);
-            
+
             // Update booking
             booking.setTimeSlot(newSlot);
             booking.setInterviewer(newSlot.getInterviewer());
-            
-            return bookingRepository.save(booking);
-            
-        } catch (OptimisticLockException e) {
-            throw new RuntimeException(
-                "Rescheduling failed. Please try again.");
+
+            // Save happens at transaction commit
+            return booking;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Rescheduling failed. Please try again.");
         }
     }
+
     
     @Transactional
     public void cancelBooking(Long bookingId) {

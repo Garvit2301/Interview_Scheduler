@@ -63,8 +63,6 @@ package com.scheduler.interview.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
 @Table(name = "bookings")
 public class Booking {
@@ -76,7 +74,6 @@ public class Booking {
     // ONE booking → ONE candidate
     @OneToOne
     @JoinColumn(name = "candidate_id", nullable = false, unique = true)
-    @JsonIgnore
     private Candidate candidate;
 
     @ManyToOne

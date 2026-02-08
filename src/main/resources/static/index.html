@@ -441,7 +441,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://interviewscheduler-production.up.railway.app/api';
+        const API_URL = 'http://interviewscheduler-production.up.railway.app/api';
         let selectedSlot = null;
         let currentCandidateId = null;
 
@@ -754,7 +754,7 @@
                 showLoading(true);
                 const res = await fetch(`${API_URL}/bookings/interviewer/${interviewerId}`);
                 const bookings = await res.json();
-                
+                console.log(bookings);
                 const container = document.getElementById('bookings-list');
                 container.innerHTML = '';
                 
@@ -771,6 +771,7 @@
                 document.getElementById('upcoming-bookings').textContent = upcoming;
                 
                 bookings.forEach(booking => {
+                    console.log(booking);
                     const card = document.createElement('div');
                     card.className = 'booking-card';
                     const date = new Date(booking.timeSlot.slotDateTime);
