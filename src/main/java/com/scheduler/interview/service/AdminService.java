@@ -34,28 +34,64 @@ public class AdminService {
      * Reset database - Delete all data from all tables
      * Uses proper order to respect foreign key constraints
      */
+    // @Transactional
+    // public ResetResult resetDatabase() {
+
+    //     long bookingsDeleted = bookingRepository.count();
+    //     bookingRepository.deleteAll();
+
+    //     long timeSlotsDeleted = timeSlotRepository.count();
+    //     timeSlotRepository.deleteAll();
+
+    //     long candidatesDeleted = candidateRepository.count();
+    //     candidateRepository.deleteAll();
+
+    //     long interviewersDeleted = interviewerRepository.count();
+    //     interviewerRepository.deleteAll();
+
+    //     resetAutoIncrement("bookings");
+    //     resetAutoIncrement("time_slots");
+    //     resetAutoIncrement("candidates");
+    //     resetAutoIncrement("interviewers");
+
+    //     entityManager.flush();
+    //     entityManager.clear();
+
+    //     return new ResetResult(
+    //         true,
+    //         "Database reset successful",
+    //         bookingsDeleted,
+    //         timeSlotsDeleted,
+    //         candidatesDeleted,
+    //         interviewersDeleted
+    //     );
+    // }
+
+
     @Transactional
     public ResetResult resetDatabase() {
+        System.out.println("Entered the function");
 
         long bookingsDeleted = bookingRepository.count();
-        bookingRepository.deleteAll();
-
-        long timeSlotsDeleted = timeSlotRepository.count();
-        timeSlotRepository.deleteAll();
+        bookingRepository.deleteAllInBatch();
 
         long candidatesDeleted = candidateRepository.count();
-        candidateRepository.deleteAll();
+        candidateRepository.deleteAllInBatch();
+
+        long timeSlotsDeleted = timeSlotRepository.count();
+        timeSlotRepository.deleteAllInBatch();
 
         long interviewersDeleted = interviewerRepository.count();
-        interviewerRepository.deleteAll();
+        interviewerRepository.deleteAllInBatch();
+
+        System.out.println("After deletions");
 
         resetAutoIncrement("bookings");
-        resetAutoIncrement("time_slots");
         resetAutoIncrement("candidates");
+        resetAutoIncrement("time_slots");
         resetAutoIncrement("interviewers");
 
-        entityManager.flush();
-        entityManager.clear();
+        System.out.println("After reset");
 
         return new ResetResult(
             true,
@@ -66,34 +102,6 @@ public class AdminService {
             interviewersDeleted
         );
     }
-
-
-
-    // @Transactional
-    // public ResetResult resetDatabase() {
-
-    //     entityManager.createNativeQuery(
-    //         "TRUNCATE TABLE bookings"
-    //     ).executeUpdate();
-
-    //     entityManager.createNativeQuery(
-    //         "TRUNCATE TABLE time_slots"
-    //     ).executeUpdate();
-
-    //     entityManager.createNativeQuery(
-    //         "TRUNCATE TABLE candidates"
-    //     ).executeUpdate();
-
-    //     entityManager.createNativeQuery(
-    //         "TRUNCATE TABLE interviewers"
-    //     ).executeUpdate();
-
-    //     return new ResetResult(
-    //         true,
-    //         "Database reset successful",
-    //         0, 0, 0, 0
-    //     );
-    // }
 
 
     

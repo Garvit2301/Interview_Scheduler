@@ -77,7 +77,7 @@ public class Booking {
     private Candidate candidate;
 
     @ManyToOne
-    @JoinColumn(name = "time_slot_id", nullable = false)
+    @JoinColumn(name = "time_slot_id")
     private TimeSlot timeSlot;
 
     @ManyToOne
