@@ -78,7 +78,15 @@
             box-shadow: 0 5px 20px rgba(102,126,234,0.4);
         }
 
-        .slots-grid {
+        .slots-page-control-wrapper {
+            text-align: center;
+        }
+        .slots-page-control-btn {
+            margin: 1rem .2rem;
+            padding: 10px;
+        }
+
+        .slot-page {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 15px;
@@ -195,6 +203,7 @@
         <h3>Available Interview Slots</h3>
         <button onclick="loadAvailableSlots()">🔄 Refresh Slots</button>
         <div id="available-slots" class="slots-grid"></div>
+        <div id="slots-page-control-wrapper" class="slots-page-control-wrapper"></div>
     </div>
 
     <!-- CONFIRM -->
@@ -399,7 +408,6 @@
 
             const result = await res.json();
 
-            console.log(result);
             // NEW candidate
             if (result.id) {
                 currentCandidateId = result.id;
@@ -461,33 +469,79 @@
             const data = await res.json();
             
             const container = document.getElementById('available-slots');
+            const btnContainer = document.getElementById('slots-page-control-wrapper');
             container.innerHTML = '';
+            btnContainer.innerHTML = '';
             
             if (data.slots.length === 0) {
                 container.innerHTML = '<p style="padding: 20px; text-align: center;">No available slots. Please ask interviewer to generate slots.</p>';
                 return;
             }
+
+            const chunks = [];
+            for (let i = 0; i < data.slots.length; i += 10) {
+                chunks.push(data.slots.slice(i, i + 10));
+            }
             
-            data.slots.forEach(slot => {
-                const card = document.createElement('div');
-                card.className = 'slot-card';
-                const date = new Date(slot.slotDateTime);
-                card.innerHTML = `
-                    <h4>👤 ${slot.interviewer.name}</h4>
-                    <p>📅 ${date.toLocaleDateString()}</p>
-                    <p>🕐 ${date.toLocaleTimeString()}</p>
-                    <p>⏱️ ${slot.durationMinutes} minutes</p>
+            chunks.forEach((chunk, index) => {
+
+                // 👇 container for THIS chunk (page)
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'slot-page';
+                pageDiv.dataset.page = index;
+
+                const btn = document.createElement('button');
+                btn.className = "slots-page-control-btn";
+                btn.setAttribute("type", "button");
+                btn.setAttribute("onclick", `openSlotPage(${index})`);
+                btn.innerHTML = `
+                    ${index+1}
                 `;
-                card.onclick = () => selectSlot(slot, card);
-                container.appendChild(card);
+                btnContainer.appendChild(btn);
+
+                // OPTIONAL: hide all except first
+                if (index !== 0) {
+                    pageDiv.style.display = 'none';
+                }
+
+                // 👇 add up to 10 cards inside this page
+                chunk.forEach(slot => {
+                    const card = document.createElement('div');
+                    card.className = 'slot-card';
+
+                    const date = new Date(slot.slotDateTime);
+
+                    card.innerHTML = `
+                        <h4>👤 ${slot.interviewer.name}</h4>
+                        <p>📅 ${date.toLocaleDateString()}</p>
+                        <p>🕐 ${date.toLocaleTimeString()}</p>
+                        <p>⏱️ ${slot.durationMinutes} minutes</p>
+                    `;
+
+                    card.onclick = () => selectSlot(slot, card);
+
+                    pageDiv.appendChild(card);
+                });
+
+                // 👇 add this chunk container to main container
+                container.appendChild(pageDiv);
             });
-            
+
             showMessage(`📊 Found ${data.count} available slots`, 'success');
         } catch (error) {
             showMessage('❌ Error loading slots: ' + error.message, 'error');
         } finally {
             showLoading(false);
         }
+    }
+
+    const openSlotPage = (index) => {
+        document.querySelectorAll(".slot-page").forEach((slotPage) => {
+            if (slotPage.style.display != "none") {
+                slotPage.style.display = "none";
+            }
+        })
+        document.getElementById('available-slots').children[index].style.display = "grid";
     }
 
     function selectSlot(slot, card) {
