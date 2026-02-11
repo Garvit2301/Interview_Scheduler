@@ -286,6 +286,54 @@
         
         .stat-card h2 { font-size: 2.5em; margin-bottom: 10px; }
         .stat-card p { font-size: 14px; }
+
+        .notification-badge {
+            display: inline-block;
+            background: #dc3545;
+            color: white;
+            border-radius: 999px;
+            padding: 2px 8px;
+            margin-left: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .notification-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .notification-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .notification-card.unread {
+            border-left: 6px solid #dc3545;
+        }
+
+        .notification-meta {
+            color: #666;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .notification-message {
+            margin-top: 10px;
+            color: #333;
+            font-size: 14px;
+            display: none;
+        }
+
+        .notification-message.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -365,50 +413,6 @@
             </div>
         </div>
 
-        <!-- CANDIDATE TAB -->
-        <!-- <div id="candidate-tab" class="tab-content">
-            <div class="section">
-                <h3>Step 1: Register as Candidate</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Your Name *</label>
-                        <input type="text" id="candidate-name" placeholder="Jane Smith">
-                    </div>
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" id="candidate-email" placeholder="jane@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Phone</label>
-                        <input type="tel" id="candidate-phone" placeholder="+1234567890">
-                    </div>
-                </div>
-                <button onclick="registerCandidate()">Register</button>
-            </div>
-
-            <hr>
-
-            <div class="section">
-                <h3>Step 2: View & Book Available Slots</h3>
-                <button onclick="loadAvailableSlots()">🔄 Refresh Available Slots</button>
-                <div id="available-slots" class="slots-grid"></div>
-            </div>
-
-            <div id="booking-form" style="display: none;">
-                <hr>
-                <div class="section">
-                    <h3>Step 3: Confirm Your Booking</h3>
-                    <div class="form-group">
-                        <label>Notes (Optional)</label>
-                        <textarea id="booking-notes" rows="3" placeholder="Any special requirements or questions..."></textarea>
-                    </div>
-                    <div class="btn-group">
-                        <button onclick="confirmBooking()">✅ Confirm Booking</button>
-                        <button class="btn-secondary" onclick="cancelSelection()">❌ Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div> -->
 
         <!-- BOOKINGS TAB -->
         <div id="bookings-tab" class="tab-content">
@@ -420,7 +424,27 @@
                         <option value="">-- Select Interviewer --</option>
                     </select>
                 </div>
-                <button onclick="loadBookings()">Load Bookings</button>
+                <div class="btn-group">
+                    <button onclick="loadBookings()">Load Bookings</button>
+                    <button id="notification-btn" class="btn-secondary" onclick="loadNotifications()">
+                        Notification
+                        <span id="notification-badge" class="notification-badge" style="display:none;">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="notifications-section" class="section" style="display:none;">
+                <h3>Notifications</h3>
+
+                <div style="margin-bottom: 18px;">
+                    <h4 style="margin-bottom: 10px; color: #333;">Unread</h4>
+                    <div id="unread-notifications"></div>
+                </div>
+
+                <div>
+                    <h4 style="margin-bottom: 10px; color: #333;">Read</h4>
+                    <div id="read-notifications"></div>
+                </div>
             </div>
 
             <div id="stats-container" style="display: none;">
@@ -463,36 +487,6 @@
             event.target.classList.add('active');
             document.getElementById(name + '-tab').classList.add('active');
         }
-
-        // Interviewer Functions
-
-        // async function createInterviewer() {
-        //     const data = {
-        //         name: document.getElementById('interviewer-name').value,
-        //         email: document.getElementById('interviewer-email').value,
-        //         maxWeeklyInterviews: parseInt(document.getElementById('max-interviews').value)
-        //     };
-
-        //     try {
-        //         showLoading(true);
-        //         const res = await fetch(`${API_URL}/interviewers`, {
-        //             method: 'POST',
-        //             headers: {'Content-Type': 'application/json'},
-        //             body: JSON.stringify(data)
-        //         });
-                
-        //         if (res.ok) {
-        //             showMessage('✅ Interviewer created successfully!', 'success');
-        //             loadInterviewers();
-        //             document.getElementById('interviewer-name').value = '';
-        //             document.getElementById('interviewer-email').value = '';
-        //         }
-        //     } catch (error) {
-        //         showMessage('❌ Error: ' + error.message, 'error');
-        //     } finally {
-        //         showLoading(false);
-        //     }
-        // }
 
 
         async function createInterviewer() {
@@ -624,123 +618,6 @@
             }
         }
 
-        // Candidate Functions
-        // async function registerCandidate() {
-        //     const data = {
-        //         name: document.getElementById('candidate-name').value,
-        //         email: document.getElementById('candidate-email').value,
-        //         phone: document.getElementById('candidate-phone').value
-        //     };
-
-        //     try {
-        //         showLoading(true);
-        //         const res = await fetch(`${API_URL}/bookings/candidates`, {
-        //             method: 'POST',
-        //             headers: {'Content-Type': 'application/json'},
-        //             body: JSON.stringify(data)
-        //         });
-                
-        //         const candidate = await res.json();
-        //         currentCandidateId = candidate.id;
-        //         showMessage('✅ Registered successfully! You can now book slots.', 'success');
-        //     } catch (error) {
-        //         showMessage('❌ Error registering: ' + error.message, 'error');
-        //     } finally {
-        //         showLoading(false);
-        //     }
-        // }
-
-        // async function loadAvailableSlots() {
-        //     try {
-        //         showLoading(true);
-        //         const res = await fetch(`${API_URL}/slots/available`);
-        //         const data = await res.json();
-                
-        //         const container = document.getElementById('available-slots');
-        //         container.innerHTML = '';
-                
-        //         if (data.slots.length === 0) {
-        //             container.innerHTML = '<p style="padding: 20px; text-align: center;">No available slots. Please ask interviewer to generate slots.</p>';
-        //             return;
-        //         }
-                
-        //         data.slots.forEach(slot => {
-        //             const card = document.createElement('div');
-        //             card.className = 'slot-card';
-        //             const date = new Date(slot.slotDateTime);
-        //             card.innerHTML = `
-        //                 <h4>👤 ${slot.interviewer.name}</h4>
-        //                 <p>📅 ${date.toLocaleDateString()}</p>
-        //                 <p>🕐 ${date.toLocaleTimeString()}</p>
-        //                 <p>⏱️ ${slot.durationMinutes} minutes</p>
-        //             `;
-        //             card.onclick = () => selectSlot(slot, card);
-        //             container.appendChild(card);
-        //         });
-                
-        //         showMessage(`📊 Found ${data.count} available slots`, 'success');
-        //     } catch (error) {
-        //         showMessage('❌ Error loading slots: ' + error.message, 'error');
-        //     } finally {
-        //         showLoading(false);
-        //     }
-        // }
-
-        // function selectSlot(slot, card) {
-        //     document.querySelectorAll('.slot-card').forEach(c => c.classList.remove('selected'));
-        //     card.classList.add('selected');
-        //     selectedSlot = slot;
-        //     document.getElementById('booking-form').style.display = 'block';
-        //     card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        // }
-
-        // function cancelSelection() {
-        //     selectedSlot = null;
-        //     document.querySelectorAll('.slot-card').forEach(c => c.classList.remove('selected'));
-        //     document.getElementById('booking-form').style.display = 'none';
-        // }
-
-        // async function confirmBooking() {
-        //     if (!currentCandidateId) {
-        //         showMessage('⚠️ Please register first', 'error');
-        //         return;
-        //     }
-
-        //     if (!selectedSlot) {
-        //         showMessage('⚠️ Please select a slot', 'error');
-        //         return;
-        //     }
-
-        //     const data = {
-        //         candidateId: currentCandidateId,
-        //         slotId: selectedSlot.id,
-        //         notes: document.getElementById('booking-notes').value
-        //     };
-
-        //     try {
-        //         showLoading(true);
-        //         const res = await fetch(`${API_URL}/bookings`, {
-        //             method: 'POST',
-        //             headers: {'Content-Type': 'application/json'},
-        //             body: JSON.stringify(data)
-        //         });
-                
-        //         const result = await res.json();
-                
-        //         if (result.success) {
-        //             showMessage('🎉 ' + result.message, 'success');
-        //             cancelSelection();
-        //             loadAvailableSlots();
-        //             document.getElementById('booking-notes').value = '';
-        //         } else {
-        //             showMessage('❌ ' + result.message, 'error');
-        //         }
-        //     } catch (error) {
-        //         showMessage('❌ Booking failed: ' + error.message, 'error');
-        //     } finally {
-        //         showLoading(false);
-        //     }
-        // }
 
         // Bookings Functions
         async function loadBookings() {
@@ -789,6 +666,7 @@
                 });
                 
                 showMessage(`📊 Loaded ${bookings.length} bookings`, 'success');
+                refreshNotificationBadge();
             } catch (error) {
                 showMessage('❌ Error loading bookings: ' + error.message, 'error');
             } finally {
@@ -796,8 +674,152 @@
             }
         }
 
+        function resetNotificationsUI() {
+            document.getElementById('notifications-section').style.display = 'none';
+            document.getElementById('unread-notifications').innerHTML = '';
+            document.getElementById('read-notifications').innerHTML = '';
+        }
+
+        function setBadgeCount(count) {
+            const badge = document.getElementById('notification-badge');
+            if (!badge) return;
+            if (count && count > 0) {
+                badge.textContent = String(count);
+                badge.style.display = 'inline-block';
+            } else {
+                badge.textContent = '0';
+                badge.style.display = 'none';
+            }
+        }
+
+        async function refreshNotificationBadge() {
+            const interviewerId = document.getElementById('booking-interviewer-select').value;
+            if (!interviewerId) {
+                setBadgeCount(0);
+                resetNotificationsUI();
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/notifications/interviewer/${interviewerId}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                setBadgeCount(data.unreadCount || 0);
+            } catch (e) {
+                // ignore badge errors
+            }
+        }
+
+        async function loadNotifications() {
+            const interviewerId = document.getElementById('booking-interviewer-select').value;
+            if (!interviewerId) {
+                showMessage('⚠️ Please select an interviewer', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const res = await fetch(`${API_URL}/notifications/interviewer/${interviewerId}`);
+                if (!res.ok) {
+                    const txt = await res.text();
+                    throw new Error(txt || 'Failed to load notifications');
+                }
+                const data = await res.json();
+
+                setBadgeCount(data.unreadCount || 0);
+                renderNotifications(data);
+            } catch (error) {
+                showMessage('❌ Error loading notifications: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderNotifications(data) {
+            const section = document.getElementById('notifications-section');
+            const unreadWrap = document.getElementById('unread-notifications');
+            const readWrap = document.getElementById('read-notifications');
+
+            unreadWrap.innerHTML = '';
+            readWrap.innerHTML = '';
+            section.style.display = 'block';
+
+            const unread = data.unreadNotifications || [];
+            const read = data.readNotifications || [];
+
+            if (unread.length === 0) {
+                unreadWrap.innerHTML = '<p style="color:#666;">No unread notifications.</p>';
+            } else {
+                unread.forEach(n => unreadWrap.appendChild(createNotificationCard(n, true)));
+            }
+
+            if (read.length === 0) {
+                readWrap.innerHTML = '<p style="color:#666;">No read notifications yet.</p>';
+            } else {
+                read.forEach(n => readWrap.appendChild(createNotificationCard(n, false)));
+            }
+        }
+
+        function createNotificationCard(n, isUnread) {
+            const card = document.createElement('div');
+            card.className = `notification-card ${isUnread ? 'unread' : ''}`.trim();
+
+            const createdAt = n.createdAt ? new Date(n.createdAt).toLocaleString() : '';
+            const candidate = n.candidateName ? `${n.candidateName}${n.candidateEmail ? ` (${n.candidateEmail})` : ''}` : '';
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+                    <div>
+                        <div style="font-weight:700; color:#333;">${escapeHtml(n.title || 'Notification')}</div>
+                        <div class="notification-meta">
+                            ${candidate ? `👤 ${escapeHtml(candidate)} · ` : ''}🕒 ${escapeHtml(createdAt)}
+                        </div>
+                    </div>
+                    <div style="font-size:12px; font-weight:700; color:${isUnread ? '#dc3545' : '#666'};">
+                        ${isUnread ? 'UNREAD' : 'READ'}
+                    </div>
+                </div>
+                <div class="notification-message">${escapeHtml(n.message || '')}</div>
+            `;
+
+            card.addEventListener('click', async () => {
+                const msg = card.querySelector('.notification-message');
+                if (msg) msg.classList.toggle('show');
+                if (isUnread) {
+                    await markNotificationAsRead(n.id);
+                }
+            });
+
+            return card;
+        }
+
+        async function markNotificationAsRead(id) {
+            try {
+                const res = await fetch(`${API_URL}/notifications/${id}/read`, { method: 'POST' });
+                if (!res.ok) return;
+                // Refresh lists + badge so it moves to "Read"
+                await loadNotifications();
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
         // Initialize
         loadInterviewers();
+        document.getElementById('booking-interviewer-select').addEventListener('change', () => {
+            setBadgeCount(0);
+            resetNotificationsUI();
+            refreshNotificationBadge();
+        });
 
 
         function resetDatabase() {

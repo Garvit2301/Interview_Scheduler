@@ -175,28 +175,6 @@
 
     <div id="bookingDiv"></div>
 
-    <!-- <div class="section" id="candidate-login-section" style="display: none;">
-        <h3>Candidate Sign In</h3>
-
-        <div class="form-row">
-            <div>
-                <label>Email or Phone *</label>
-                <input type="text" id="login-identifier" placeholder="Email or Mobile Number">
-            </div>
-
-            <div>
-                <label>Password *</label>
-                <input type="password" id="login-password" placeholder="Your password">
-            </div>
-        </div>
-
-        <button onclick="loginCandidate()">Sign In</button>
-
-        <button type="button" class="switch-text" onclick="showRegisterSection()">
-            New user? Register here...
-        </button>
-    </div> -->
-
 
     <!-- SLOTS -->
     <div class="section" id="loadSlot" style="display:none;">
@@ -511,12 +489,26 @@
 
                     const date = new Date(slot.slotDateTime);
 
+                    // card.innerHTML = `
+                    //     <h4>👤 ${slot.interviewer.name}</h4>
+                    //     <p>📅 ${date.toLocaleDateString()}</p>
+                    //     <p>🕐 ${date.toLocaleTimeString()}</p>
+                    //     <p>⏱️ ${slot.durationMinutes} minutes</p>
+                    // `;
+
+
+                    const startTime = new Date(date); // start time
+                    const endTime = new Date(startTime);
+                    endTime.setMinutes(endTime.getMinutes() + slot.durationMinutes);
+
                     card.innerHTML = `
                         <h4>👤 ${slot.interviewer.name}</h4>
-                        <p>📅 ${date.toLocaleDateString()}</p>
-                        <p>🕐 ${date.toLocaleTimeString()}</p>
+                        <p>📅 ${startTime.toLocaleDateString()}</p>
+                        <p>🕐 ${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            – ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                         <p>⏱️ ${slot.durationMinutes} minutes</p>
                     `;
+
 
                     card.onclick = () => selectSlot(slot, card);
 

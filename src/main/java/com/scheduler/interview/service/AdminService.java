@@ -19,58 +19,30 @@ public class AdminService {
     private final TimeSlotRepository timeSlotRepository;
     private final CandidateRepository candidateRepository;
     private final InterviewerRepository interviewerRepository;
+    private final NotificationRepository notificationRepository;
     
     public AdminService(BookingRepository bookingRepository,
                        TimeSlotRepository timeSlotRepository,
                        CandidateRepository candidateRepository,
-                       InterviewerRepository interviewerRepository) {
+                       InterviewerRepository interviewerRepository,
+                       NotificationRepository notificationRepository) {
         this.bookingRepository = bookingRepository;
         this.timeSlotRepository = timeSlotRepository;
         this.candidateRepository = candidateRepository;
         this.interviewerRepository = interviewerRepository;
+        this.notificationRepository = notificationRepository;
     }
     
     /**
      * Reset database - Delete all data from all tables
      * Uses proper order to respect foreign key constraints
      */
-    // @Transactional
-    // public ResetResult resetDatabase() {
-
-    //     long bookingsDeleted = bookingRepository.count();
-    //     bookingRepository.deleteAll();
-
-    //     long timeSlotsDeleted = timeSlotRepository.count();
-    //     timeSlotRepository.deleteAll();
-
-    //     long candidatesDeleted = candidateRepository.count();
-    //     candidateRepository.deleteAll();
-
-    //     long interviewersDeleted = interviewerRepository.count();
-    //     interviewerRepository.deleteAll();
-
-    //     resetAutoIncrement("bookings");
-    //     resetAutoIncrement("time_slots");
-    //     resetAutoIncrement("candidates");
-    //     resetAutoIncrement("interviewers");
-
-    //     entityManager.flush();
-    //     entityManager.clear();
-
-    //     return new ResetResult(
-    //         true,
-    //         "Database reset successful",
-    //         bookingsDeleted,
-    //         timeSlotsDeleted,
-    //         candidatesDeleted,
-    //         interviewersDeleted
-    //     );
-    // }
-
-
     @Transactional
     public ResetResult resetDatabase() {
         System.out.println("Entered the function");
+
+        long notificationsDeleted = notificationRepository.count();
+        notificationRepository.deleteAllInBatch();
 
         long bookingsDeleted = bookingRepository.count();
         bookingRepository.deleteAllInBatch();
@@ -86,6 +58,7 @@ public class AdminService {
 
         System.out.println("After deletions");
 
+        resetAutoIncrement("notifications");
         resetAutoIncrement("bookings");
         resetAutoIncrement("candidates");
         resetAutoIncrement("time_slots");
@@ -96,6 +69,7 @@ public class AdminService {
         return new ResetResult(
             true,
             "Database reset successful",
+            notificationsDeleted,
             bookingsDeleted,
             timeSlotsDeleted,
             candidatesDeleted,
@@ -123,6 +97,7 @@ public class AdminService {
      */
     public DatabaseStats getDatabaseStats() {
         return new DatabaseStats(
+            notificationRepository.count(),
             bookingRepository.count(),
             timeSlotRepository.count(),
             candidateRepository.count(),
@@ -136,15 +111,17 @@ public class AdminService {
     public static class ResetResult {
         private boolean success;
         private String message;
+        private long notificationsDeleted;
         private long bookingsDeleted;
         private long timeSlotsDeleted;
         private long candidatesDeleted;
         private long interviewersDeleted;
         
         public ResetResult(boolean success, String message,
-                          long bookings, long slots, long candidates, long interviewers) {
+                          long notifications, long bookings, long slots, long candidates, long interviewers) {
             this.success = success;
             this.message = message;
+            this.notificationsDeleted = notifications;
             this.bookingsDeleted = bookings;
             this.timeSlotsDeleted = slots;
             this.candidatesDeleted = candidates;
@@ -154,12 +131,13 @@ public class AdminService {
         // Getters
         public boolean isSuccess() { return success; }
         public String getMessage() { return message; }
+        public long getNotificationsDeleted() { return notificationsDeleted; }
         public long getBookingsDeleted() { return bookingsDeleted; }
         public long getTimeSlotsDeleted() { return timeSlotsDeleted; }
         public long getCandidatesDeleted() { return candidatesDeleted; }
         public long getInterviewersDeleted() { return interviewersDeleted; }
         public long getTotalDeleted() { 
-            return bookingsDeleted + timeSlotsDeleted + candidatesDeleted + interviewersDeleted; 
+            return notificationsDeleted + bookingsDeleted + timeSlotsDeleted + candidatesDeleted + interviewersDeleted;
         }
     }
     
@@ -167,12 +145,14 @@ public class AdminService {
      * Statistics class for database
      */
     public static class DatabaseStats {
+        private long totalNotifications;
         private long totalBookings;
         private long totalTimeSlots;
         private long totalCandidates;
         private long totalInterviewers;
         
-        public DatabaseStats(long bookings, long slots, long candidates, long interviewers) {
+        public DatabaseStats(long notifications, long bookings, long slots, long candidates, long interviewers) {
+            this.totalNotifications = notifications;
             this.totalBookings = bookings;
             this.totalTimeSlots = slots;
             this.totalCandidates = candidates;
@@ -180,12 +160,13 @@ public class AdminService {
         }
         
         // Getters
+        public long getTotalNotifications() { return totalNotifications; }
         public long getTotalBookings() { return totalBookings; }
         public long getTotalTimeSlots() { return totalTimeSlots; }
         public long getTotalCandidates() { return totalCandidates; }
         public long getTotalInterviewers() { return totalInterviewers; }
         public long getTotalRecords() { 
-            return totalBookings + totalTimeSlots + totalCandidates + totalInterviewers; 
+            return totalNotifications + totalBookings + totalTimeSlots + totalCandidates + totalInterviewers;
         }
     }
 }

@@ -36,6 +36,7 @@ public class AdminController {
         response.put("success", result.isSuccess());
         response.put("message", result.getMessage());
         response.put("deletedRecords", Map.of(
+            "notifications", result.getNotificationsDeleted(),
             "bookings", result.getBookingsDeleted(),
             "timeSlots", result.getTimeSlotsDeleted(),
             "candidates", result.getCandidatesDeleted(),
@@ -59,6 +60,7 @@ public class AdminController {
         
         Map<String, Object> response = new HashMap<>();
         response.put("currentRecords", Map.of(
+            "notifications", stats.getTotalNotifications(),
             "bookings", stats.getTotalBookings(),
             "timeSlots", stats.getTotalTimeSlots(),
             "candidates", stats.getTotalCandidates(),
