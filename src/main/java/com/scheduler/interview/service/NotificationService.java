@@ -5,14 +5,19 @@ import com.scheduler.interview.model.Candidate;
 import com.scheduler.interview.model.Interviewer;
 import com.scheduler.interview.model.Notification;
 import com.scheduler.interview.repository.NotificationRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class NotificationService {
+
+    private static final int UNREAD_PAGE_SIZE = 10;
+    private static final int READ_PAGE_SIZE = 10;
 
     private final NotificationRepository notificationRepository;
 
@@ -42,8 +47,14 @@ public class NotificationService {
         return notificationRepository.save(n);
     }
 
-    public List<Notification> getForInterviewer(Long interviewerId) {
-        return notificationRepository.findByInterviewerIdOrderByCreatedAtDesc(interviewerId);
+    public Page<Notification> getUnreadForInterviewer(Long interviewerId, int page) {
+        Pageable pageable = PageRequest.of(page, UNREAD_PAGE_SIZE);
+        return notificationRepository.findByInterviewerIdAndReadFalseOrderByCreatedAtDesc(interviewerId, pageable);
+    }
+
+    public Page<Notification> getReadForInterviewer(Long interviewerId, int page) {
+        Pageable pageable = PageRequest.of(page, READ_PAGE_SIZE);
+        return notificationRepository.findByInterviewerIdAndReadTrueOrderByCreatedAtDesc(interviewerId, pageable);
     }
 
     public long countUnreadForInterviewer(Long interviewerId) {
